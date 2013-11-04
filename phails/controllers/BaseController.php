@@ -7,6 +7,8 @@ class BaseController{
 	private $shortName;
 	private $controllerName;
 	private $reflectionClass;
+	private $params = array();
+	private $currentActionName;
 	
 	public function __construct()
 	{
@@ -18,18 +20,43 @@ class BaseController{
 		$this -> reflectionClass = new ReflectionClass($this);
 		$this -> controllerName = $this -> reflectionClass -> getName();
 		$this -> getShortName();
+		$this -> params = $_REQUEST;
 	}
 	
 	public function __autoload($filename)
 	{
 		require Environment::$conf['modelDir'] . $filename . '.php';
 	}
+
+	public function runAction($action)
+	{
+		if(method_exists(get_class($this) , $action)){
+			$this -> currentActionName = $action;
+			$this -> $action();
+		}else{
+			throw new RouterException("Action ".$action." not defined!!" , RouterException::ACTION_UNDEFINED);
+		}
+	}
+
+	protected function get_params()
+	{
+		return $this -> params;
+	}
+
+	protected function getParams()
+	{
+		return $this -> params;
+	}
+
+	protected function getParam($key){
+		return $this -> params[$key];
+	}
 	
-	public function render($template = null)
+	protected function render($template = null)
 	{
 		//TODO: improve this variables accessed automatically by a sign of specific symbol
-		$callerClass  = $this -> shortName . 'View';
-		$callerMethod = $this -> getCaller();
+		$callerClass  = $this -> shortName . 'Views';
+		$callerMethod = $this -> currentActionName;
 		if(!$template)
 		{
 			$template = Environment::$conf['viewDir'] . $callerClass . '/' . $callerMethod . '.php';
@@ -42,8 +69,8 @@ class BaseController{
 		$page = ob_get_clean();
 		echo $page;
 	}
-	
-	public function echoJson($arr)
+
+	protected function echo_JSON($arr)
 	{
 		$json = json_encode($arr);
 		header('Content-type: application/json;charset=utf-8');
@@ -84,12 +111,6 @@ class BaseController{
 		$this -> shortName = substr($this -> controllerName , 0 , $pos);
 	}
 	
-	private function getCaller()
-	{
-		$caller = Common::getCallerMethod();
-		return $caller;
-	}
-	
 	protected function setFlash($flashMessage)
 	{
 		$this -> flash = array_merge($this -> flash , $flashMessage);
@@ -100,5 +121,6 @@ class BaseController{
 	{
 		$_SESSION['flash'] = null;
 	}
+
 }
 ?>

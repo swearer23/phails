@@ -3,21 +3,19 @@ class Common
 {
 	public static function getRequest()
 	{
-		$controller = $_GET["controller"];
-		if(!$controller)
+		if(isset($_GET["controller"]))
 		{
-			BaseException::controllerNotFound($controller);
+			$controller = self::strToTerm($_GET["controller"] , 'controller');
+		}else{
+			$controller = self::strToTerm("index" , "controller");
 		}
-		$controller = self::strToTerm($controller , 'controller');
-		$action = $_GET["action"];
-		$action = self::strToTerm($action , 'action');
+		if(isset($_GET["action"])){
+			$action = self::strToTerm($_GET["action"] , 'action');
+		}else{
+			$action = self::strToTerm('index' , 'action');
+		}
 		$request = array("controller" => $controller , "action" => $action);
 		return $request;
-	}
-	
-	public static function getParams()
-	{
-	
 	}
 	
 	public static function strToTerm($str , $suffix = '')
@@ -53,7 +51,7 @@ class Common
 		{
 			return $map[$term];
 		}else{
-			$str = preg_replace('/[A-Z]/e' ,  "_.strtolower($0)" , $term);
+			$str = preg_replace_callback('/[A-Z]/' ,  array("Common" , "lowerFirstChar") , $term);
 			if($str[0] == '_')
 			{
 				$str = substr($str , 1 , strlen($str)-1);
@@ -73,15 +71,21 @@ class Common
 		if(strpos($classname , 'Model'))
 		{
 			require Environment::$conf['modelDir'].$classname.'.php';
+			$classname::init();
 			return;
 		}
 	}
 	
-	public function getCallerMethod()
+	public static function getCallerMethod()
 	{
 		$backtrace = debug_backtrace();
 		$lastStack = array_pop($backtrace);
 		return $lastStack['function'];
+	}
+
+	public static function lowerFirstChar($match)
+	{
+		return "_" . strtolower($match[0]);
 	}
 }
 ?>
