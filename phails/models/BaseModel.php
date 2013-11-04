@@ -33,6 +33,18 @@ class BaseModel
 		return self::$adaptor->find($query_object);
 	}
 
+	final public static function find_all_by_condition($condition)
+	{
+		if($condition instanceof Condition)
+		{
+			return self::find(array(
+				"condition" => $condition
+			));
+		}else{
+			throw new ORMException("parameter is not type of Condition in method find_all_by_condition" , ORMException::CONDITION_TYPE_ERROR);
+		}
+	}
+
 	final public static function find_by_id($id)
 	{
 		$query_object = array(
