@@ -21,6 +21,18 @@ class ConditionElement
 		return $this;
 	}
 
+	public function between($lower_value , $greater_value)
+	{
+		$this->statement = $this->key_name . ">='" . $lower_value . "' AND " . $this->key_name . "<='" . $greater_value . "'";
+		return $this;
+	}
+
+	public function within($lower_value , $greater_value)
+	{
+		$this->statement = $this->key_name . ">'" . $lower_value . "' AND " . $this->key_name . "<'" . $greater_value . "'";
+		return $this;
+	}
+
 	public function get_statement()
 	{
 		return $this->statement;

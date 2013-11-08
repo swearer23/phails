@@ -4,6 +4,7 @@ class RouterMap
 	public static $map = array(
 		'Project' => 'project', 
 'Stub' => 'stub', 
+'Poi' => 'poi', 
 
 	);
 }

@@ -31,7 +31,7 @@ class Environment {
 			'modelDir'		=> Environment::$root . '/../app/models/',
 			'controllerDir'	=> Environment::$root . '/../app/controllers/',
 			'viewDir'		=> Environment::$root . '/../app/views/',
-			'routerDir'		=> Environment::$root . '/../Phails/router/'
+			'routerDir'		=> Environment::$root . '/../phails/router/'
 		);
 	}
 
