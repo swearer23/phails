@@ -38,6 +38,31 @@ class BaseController{
 		}
 	}
 
+	protected function get_files()
+	{
+		$files = array();
+		foreach($_FILES as $k => $f)
+		{
+			if(is_array($f["type"]))
+			{
+				$files[$k] = array();
+				$length = count($f["name"]);
+				for($i=0; $i<$length ; $i++)
+				{
+					$k_file = array();
+					$k_file["name"]		= $f["name"][$i];
+					$k_file["type"]		= $f["type"][$i];
+					$k_file["tmp_name"]	= $f["tmp_name"][$i];
+					$k_file["error"]	= $f["error"][$i];
+					array_push($files[$k] , $k_file);
+				}
+			}else{
+				$files[$k] = $f;
+			}
+		}
+		return $files;
+	}
+
 	protected function get_params()
 	{
 		return $this -> params;

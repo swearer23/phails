@@ -8,16 +8,17 @@ require('ConnectionManager.php');
 
 class Adaptor{
 
+	private $use_db_config = null;
 	private $table_name;
 	private $conn;
 	private $affected_rows = 0;
 	private $model_name;
 
-	public function __construct($table_name)
+	public function __construct($model_name , $table_name , $db_name = null , $db_config = null)
 	{
 		$this->table_name = $table_name;
-		$this->model_name = $this->get_model_name();
-		$this->conn = ConnectionManager::getInstance();
+		$this->model_name = $model_name;
+		$this->conn = ConnectionManager::getInstance($db_name , $this->use_db_config);
 	}
 
 	public function get_columns($tablename)
@@ -101,11 +102,6 @@ class Adaptor{
 		return $res;
 	}
 
-	private function get_model_name()
-	{
-		return Common::strToTerm($this->table_name)."Model";
-	}
-
 	private function parse_condition($condition_object)
 	{
 		$condition_template = array(
@@ -115,7 +111,8 @@ class Adaptor{
 			"limit"		=> ""
 		);
 	}
-
+	
+	/*
 	public function getQueryStatement($columns="*",$table_name,$wheres,$order,$limit,$other){
 		if(empty($columns)||empty($table_name)||empty($wheres)){
 			throw new DbException("query params ".$columns.",".$table_name." is null", DbException::PARAMS_ERROR);
@@ -196,5 +193,7 @@ class Adaptor{
 	public function getAffectedRows(){
 		return $this->affected_rows;
 	}
+
+	*/
 
 }

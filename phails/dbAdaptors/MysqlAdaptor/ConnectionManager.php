@@ -3,10 +3,19 @@ class ConnectionManager extends PDO{
 
 	public static $conn;
 
-	public static function getInstance(){
-		$config = Environment::$conf["db_config"];
+	public static function getInstance($db_name = null , $use_config = null){
+		if(empty($use_config))
+		{
+			$config = Environment::$conf["dbConfig"];
+		}else{
+			$config = $use_config;
+		}
 		if(empty($config)){
 			throw new DbException('empty config', DbException::PARAMS_ERROR);
+		}
+		if(!empty($db_name))
+		{
+			$config["database"] = $db_name;
 		}
 		if(empty(self::$conn)){
 			self::$conn = self::init($config);

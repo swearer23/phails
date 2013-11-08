@@ -10,7 +10,12 @@ class Common
 			$controller = self::strToTerm("index" , "controller");
 		}
 		if(isset($_GET["action"])){
-			$action = self::strToTerm($_GET["action"] , 'action');
+			if(method_exists($controller , $_GET["action"]))
+			{
+				$action = $_GET["action"];
+			}else{
+				$action = self::strToTerm($_GET["action"] , 'action');
+			}
 		}else{
 			$action = self::strToTerm('index' , 'action');
 		}
@@ -74,6 +79,8 @@ class Common
 			$classname::init();
 			return;
 		}
+		require Environment::$conf['utilsDir'].$classname.'.php';
+		return;
 	}
 	
 	public static function getCallerMethod()

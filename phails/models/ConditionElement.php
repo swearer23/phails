@@ -33,6 +33,37 @@ class ConditionElement
 		return $this;
 	}
 
+	public function in($elements_array)
+	{
+		$in = implode("','" , $elements_array);
+		$this->statement = $this->key_name . " in ('" . $in . "')";
+		return $this;
+	}
+
+	public function gt($value)
+	{
+		$this->statement = $this->key_name . ">'" . $value . "'";
+		return $this;
+	}
+
+	public function lt($value)
+	{
+		$this->statement = $this->key_name . "<'" . $value . "'";
+		return $this;
+	}
+
+	public function gt_and_eq($value)
+	{
+		$this->statement = $this->key_name . "<='" . $value . "'";
+		return $this;
+	}
+
+	public function lt_and_eq($value)
+	{
+		$this->statement = $this->key_name . ">='" . $value . "'";
+		return $this;
+	}
+
 	public function get_statement()
 	{
 		return $this->statement;

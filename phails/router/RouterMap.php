@@ -5,6 +5,8 @@ class RouterMap
 		'Project' => 'project', 
 'Stub' => 'stub', 
 'Poi' => 'poi', 
+'Campaign' => 'campaign', 
+'ChatArchive' => 'chat_archive', 
 
 	);
 }

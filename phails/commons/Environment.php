@@ -1,8 +1,8 @@
 <?php
 class Environment {
-	public static $conf;
-	public static $root;
 
+	public static $conf;
+	private static $root;
 	private static $userENV;
 
 	const DEV = "dev";
@@ -13,6 +13,8 @@ class Environment {
 	
 	public static function init()
 	{
+		self::$root = getcwd() . "/../";
+		$GLOBALS['root'] = self::$root;
 		require 'Common.php';
 		require dirname(__FILE__) . '/../exceptions/BaseException.php';
 		require dirname(__FILE__) . '/../exceptions/ORMException.php';
@@ -28,10 +30,11 @@ class Environment {
 		
 		self::$conf = array(
 			'root' 			=> Environment::$root,
-			'modelDir'		=> Environment::$root . '/../app/models/',
-			'controllerDir'	=> Environment::$root . '/../app/controllers/',
-			'viewDir'		=> Environment::$root . '/../app/views/',
-			'routerDir'		=> Environment::$root . '/../phails/router/'
+			'modelDir'		=> Environment::$root . 'app/models/',
+			'controllerDir'	=> Environment::$root . 'app/controllers/',
+			'viewDir'		=> Environment::$root . 'app/views/',
+			'utilsDir'		=> Environment::$root . 'app/utils/',
+			'routerDir'		=> Environment::$root . 'phails/router/'
 		);
 	}
 
@@ -39,7 +42,10 @@ class Environment {
 		require dirname(__FILE__) . '/../../config/Environment.php';
 		self::$userENV = UserEnvironment::$config;
 		self::$running_env = self::$userENV["env"];
-		self::$conf["db_config"] = self::$userENV[self::$running_env]["dbConfig"];
+		foreach(self::$userENV[self::$running_env] as $k => $v)
+		{
+			self::$conf[$k] = $v;
+		}
 	}
 }
 ?>
