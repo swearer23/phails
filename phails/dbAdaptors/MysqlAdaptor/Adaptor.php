@@ -31,8 +31,9 @@ class Adaptor{
 
 	public function create($orm_object)
 	{
-		foreach($orm_object as $k=>$v){
-			$orm_object[$k]=addslashes ($v);
+		foreach($orm_object as $k=>$v)
+		{
+			$orm_object[$k]=addslashes ($v);	
 		}
 		$column_str = implode("`,`",array_keys($orm_object));
 		if(!empty($column_str)){
@@ -59,7 +60,11 @@ class Adaptor{
 			$sql .= " LIMIT " . $query_object["limit"];
 		}
 		$result = $this->exec($sql);
-		return $result["statement"]->fetchAll(PDO::FETCH_CLASS , $this->model_name);
+		if($cols == "*"){
+			return $result["statement"]->fetchAll(PDO::FETCH_CLASS , $this->model_name);
+		}else{
+			return $result["statement"]->fetchAll(PDO::FETCH_COLUMN, $this->model_name);
+		}
 	}
 
 	public function count($query_object)

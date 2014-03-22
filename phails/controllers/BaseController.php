@@ -77,6 +77,10 @@ class BaseController{
 		return $this -> params[$key];
 	}
 	
+	protected  function setVals($vals)
+	{
+		$this->re_vals = $vals;
+	}
 	protected function render($template = null)
 	{
 		//TODO: improve this variables accessed automatically by a sign of specific symbol
@@ -146,6 +150,29 @@ class BaseController{
 	{
 		$_SESSION['flash'] = null;
 	}
-
+	
+	public function checkUserLogin()
+	{
+		$username = isset($_COOKIE['username'])?$_COOKIE['username']:"";
+		$res =array();
+		if(empty($username))
+		{
+			$res['ret'] = 0;
+			$res['err_msg'] ="please login in";
+		}
+		return $res;
+	}
+	
+	public function FormattedData($formatted_data)
+	{
+		foreach ($formatted_data as $key=>$value)
+		{
+			if(is_null($value))
+			{
+				$formatted_data[$key] = '';
+			}
+		}
+		return $formatted_data;
+	}
 }
 ?>

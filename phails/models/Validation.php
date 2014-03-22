@@ -63,7 +63,7 @@ class Validation{
 
 	private function necessary_validation($column , $value)
 	{
-		if(empty($value))
+		if(empty($value) && $value !== 0 && $value !== "0")
 		{
 			$this->model->set_invalid_message($this->validation[$column]["message"]);
 			return false;
