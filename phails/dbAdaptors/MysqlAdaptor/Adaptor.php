@@ -56,6 +56,9 @@ class Adaptor{
 		{
 			$sql .= $query_object["condition"]->condition_statement;
 		}
+		if(isset($query_object["order"])){
+			$sql .= " ORDER BY " . $query_object["order"];
+		}
 		if(isset($query_object["limit"])){
 			$sql .= " LIMIT " . $query_object["limit"];
 		}
@@ -94,6 +97,20 @@ class Adaptor{
 		$sql = "UPDATE ".$this->table_name." SET ".$updates." WHERE id='".$orm_object["id"]."'";
 		$result = $this->exec($sql);
 		return $result["ret"];
+	}
+
+	public function destroy($orm_object)
+	{
+		$id = isset($orm_object["id"]) ? $orm_object["id"] : null;
+		if($id)
+		{
+			$sql = "DELETE FROM ".$this->table_name;
+			$sql .= " WHERE id = " . $id;
+			$result = $this->exec($sql);
+			return $result;
+		}else{
+			return false;
+		}
 	}
 
 	private function exec($sql)

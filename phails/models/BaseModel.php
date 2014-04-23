@@ -124,10 +124,17 @@ class BaseModel
 			$this->orm_mapping($params);
 		}
 	}
+
+	protected function before_create(){}
+	protected function before_update(){}
+	protected function before_save(){}
 	
 	final public function create($object_array = null)
 	{
 		$this->orm_mapping($object_array);
+		$this->before_create();
+		$this->before_save();
+		$this->orm_mapping();
 		$validity = $this->validate();
 		if($validity)
 		{
@@ -143,6 +150,9 @@ class BaseModel
 	final public function update($object_array = null)
 	{
 		$this->orm_mapping($object_array);
+		$this->before_update();
+		$this->before_save();
+		$this->orm_mapping();
 		$validity = $this->update_validate();
 		if($validity)
 		{
@@ -178,6 +188,14 @@ class BaseModel
 	public function set_invalid_message($invalid_message)
 	{
 		$this->invalid_message = $invalid_message;
+	}
+
+	public function destroy()
+	{
+		$this->orm_mapping($object_array);
+		$adaptor = self::get_adaptor();
+		$result = $adaptor->destroy($this->orm_object);
+		return $result;
 	}
 
 	private function orm_mapping($object_array)

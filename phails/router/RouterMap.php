@@ -18,6 +18,7 @@ class RouterMap
 'Session' => 'session', 
 'DeveloperAuth' => 'developer_auth', 
 'RequestToken' => 'request_token', 
+'ShineGo' => 'shine_go', 
 
 	);
 }
