@@ -18,21 +18,37 @@ class Validation{
 	{
 		$valid = true;
 		$this->validation = $this->model->get_validation();
-		foreach($this->validation as $k=>$v)
+		foreach($this->validation as $v)
 		{
 			switch($v["type"]){
 				case self::UNIQUE:
 				{
-					$valid = $this->uniq_validation($k , $this->model->$k);
+					$valid = $this->uniq_validation($v["column"] , $this->model->$v["column"]);
 					break;
 				}
 				case self::NECESSARY:
 				{
-					$valid = $this->necessary_validation($k , $this->model->$k);
+					$valid = $this->necessary_validation($v["column"] , $this->model->$v["column"]);
 					break;
 				}
+				default:
+				{	
+					if(self::$validation_type === self::UPDATE && isset($v["skip_update"]) && $v["skip_update"]){
+					}else{
+						$method = $v["type"];
+						$valid = $this->model->$method();
+					}
+				}
 			}
-			if(!$valid){break;}
+			if(!$valid){
+				if(isset($v["message"])){
+					$this->model->set_invalid_message($v["message"]);
+				}
+				if(isset($v["error_code"])){
+					$this->model->set_error_code($v["error_code"]);
+				}
+				break;
+			}
 		}
 		return $valid;
 	}
@@ -54,7 +70,6 @@ class Validation{
 			"condition" => $condition
 		));
 		if($count > 0){
-			$this->model->set_invalid_message($this->validation[$column]["message"]);
 			return false;
 		}else{
 			return true;
@@ -65,7 +80,6 @@ class Validation{
 	{
 		if(empty($value) && $value !== 0 && $value !== "0")
 		{
-			$this->model->set_invalid_message($this->validation[$column]["message"]);
 			return false;
 		}
 		return true;

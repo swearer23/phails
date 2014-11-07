@@ -3,11 +3,11 @@
 class BaseController{
 	protected $__;
 	protected $flash = array();
+	protected $params = array();
 
 	private $shortName;
 	private $controllerName;
 	private $reflectionClass;
-	private $params = array();
 	private $currentActionName;
 	
 	public function __construct()

@@ -70,6 +70,16 @@ class Adaptor{
 		}
 	}
 
+	public function findOne($query_object)
+	{
+		$result = $this->find($query_object);
+		if($result){
+			return $result[0];
+		}else{
+			return null;
+		}
+	}
+
 	public function count($query_object)
 	{
 		$sql = "SELECT COUNT(*) FROM ".$this->table_name;

@@ -11,6 +11,7 @@ class BaseModel
 	protected static $db_config;
 	protected $validation = array();
 	protected $invalid_message;
+	protected $error_code;
 	protected $orm_object;
 
 	public static function init()
@@ -90,6 +91,12 @@ class BaseModel
 		return $adaptor->find($query_object);
 	}
 
+	final public static function find_one($query_object=null)
+	{
+		$adaptor = self::get_adaptor();
+		return $adaptor->findOne($query_object);
+	}
+
 	final public static function find_all_by_condition($condition)
 	{
 		if($condition instanceof Condition)
@@ -128,6 +135,9 @@ class BaseModel
 	protected function before_create(){}
 	protected function before_update(){}
 	protected function before_save(){}
+	protected function after_create(){}
+	protected function after_save(){}
+	protected function after_update(){}
 	
 	final public function create($object_array = null)
 	{
@@ -141,6 +151,8 @@ class BaseModel
 			$adaptor = self::get_adaptor();
 			$id = $adaptor->create($this->orm_object);
 			$this->id = $id;
+			$this->after_create();
+			$this->after_save();
 			return true;
 		}else{
 			return false;
@@ -158,6 +170,8 @@ class BaseModel
 		{
 			$adaptor = self::get_adaptor();
 			$result = $adaptor->update($this->orm_object);
+			$this->after_update();
+			$this->after_save();
 			return $result;
 		}else{
 			return false;
@@ -190,6 +204,16 @@ class BaseModel
 		$this->invalid_message = $invalid_message;
 	}
 
+	public function get_error_code()
+	{
+		return $this->error_code;
+	}
+
+	public function set_error_code($error_code)
+	{
+		$this->error_code = $error_code;
+	}
+
 	public function destroy()
 	{
 		$this->orm_mapping($object_array);
@@ -198,9 +222,9 @@ class BaseModel
 		return $result;
 	}
 
-	private function orm_mapping($object_array)
+	private function orm_mapping($object_array = null)
 	{
-		if(!empty($object_array))
+		if($object_array && !empty($object_array))
 		{
 			$this->mapping_in($object_array);
 		}

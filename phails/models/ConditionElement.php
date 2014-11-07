@@ -11,7 +11,11 @@ class ConditionElement
 
 	public function is($value)
 	{
-		$this->statement = $this->key_name . "='" . $value . "'";
+		if($value){
+			$this->statement = $this->key_name . "='" . $value . "'";
+		}else{
+			$this->statement = null;
+		}
 		return $this;
 	}
 
@@ -40,27 +44,42 @@ class ConditionElement
 		return $this;
 	}
 
+	public function not_in($elements_array)
+	{
+		$notIn = implode("','" , $elements_array);
+		$this->statement = $this->key_name . " not in ('" . $notIn . "')";
+		return $this;
+	}
+
 	public function gt($value)
 	{
-		$this->statement = $this->key_name . ">'" . $value . "'";
+		if($value){
+			$this->statement = $this->key_name . ">'" . $value . "'";
+		}else{
+			$this->statement = null;
+		}
 		return $this;
 	}
 
 	public function lt($value)
 	{
-		$this->statement = $this->key_name . "<'" . $value . "'";
+		if($value){
+			$this->statement = $this->key_name . "<'" . $value . "'";
+		}else{
+			$this->statement = null;
+		}
 		return $this;
 	}
 
-	public function gt_and_eq($value)
-	{
-		$this->statement = $this->key_name . "<='" . $value . "'";
-		return $this;
-	}
-
-	public function lt_and_eq($value)
+	public function gteq($value)
 	{
 		$this->statement = $this->key_name . ">='" . $value . "'";
+		return $this;
+	}
+
+	public function lteq($value)
+	{
+		$this->statement = $this->key_name . "<='" . $value . "'";
 		return $this;
 	}
 

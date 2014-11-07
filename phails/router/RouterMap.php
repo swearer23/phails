@@ -19,6 +19,19 @@ class RouterMap
 'DeveloperAuth' => 'developer_auth', 
 'RequestToken' => 'request_token', 
 'ShineGo' => 'shine_go', 
+'IdPossessionMap' => 'id_possession_map', 
+'BasicParams' => 'basic_params', 
+'DeviceBasicParams' => 'device_basic_params', 
+'Application' => 'application', 
+'ApplicationHasBeacon' => 'application_has_beacon', 
+'Applicant' => 'applicant', 
+'Authentication' => 'authentication', 
+'Level' => 'level', 
+'Entity' => 'entity', 
+'Group' => 'group', 
+'Category' => 'category', 
+'OperationLog' => 'operation_log', 
+'DataCount' => 'data_count', 
 
 	);
 }

@@ -32,7 +32,9 @@ class Condition
 	{
 		foreach($this->condition_elements as $ce)
 		{
-			array_push($this->condition_statements_array , $ce->get_statement());
+			if($ce->get_statement()){
+				array_push($this->condition_statements_array , $ce->get_statement());
+			}
 		}
 		$statement = implode($this->condition_statements_array, " AND ");
 		if(empty($statement))
