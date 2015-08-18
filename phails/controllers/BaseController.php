@@ -1,16 +1,17 @@
 <?php
 
 class BaseController{
-	protected $__;
 	protected $flash = array();
 	protected $params = array();
+    protected $request = null;
+	protected $before_filter = array();
 
 	private $shortName;
 	private $controllerName;
 	private $reflectionClass;
 	private $currentActionName;
-	
-	public function __construct()
+
+	public function __construct(ParameterWrapper $request)
 	{
 		if(isset($_SESSION['flash']))
 		{
@@ -20,9 +21,16 @@ class BaseController{
 		$this -> reflectionClass = new ReflectionClass($this);
 		$this -> controllerName = $this -> reflectionClass -> getName();
 		$this -> getShortName();
-		$this -> params = $_REQUEST;
+		unset($_REQUEST["controller"]);
+		unset($_REQUEST["action"]);
+        //request对象
+        $this->request = $request;
+        $this->request->add($_REQUEST);
+        $this->request->add($_COOKIE);
+        //适应原有代码
+        $this->params =& $this->request;
 	}
-	
+
 	public function __autoload($filename)
 	{
 		require Environment::$conf['modelDir'] . $filename . '.php';
@@ -32,6 +40,7 @@ class BaseController{
 	{
 		if(method_exists(get_class($this) , $action)){
 			$this -> currentActionName = $action;
+			$this -> before_filter();
 			$this -> $action();
 		}else{
 			throw new RouterException("Action ".$action." not defined!!" , RouterException::ACTION_UNDEFINED);
@@ -40,7 +49,7 @@ class BaseController{
 
 	protected function get_files()
 	{
-		$files = array();
+        $files = array();
 		foreach($_FILES as $k => $f)
 		{
 			if(is_array($f["type"]))
@@ -76,13 +85,24 @@ class BaseController{
 	protected function getParam($key){
 		return $this -> params[$key];
 	}
-	
+
+	/*
 	protected  function setVals($vals)
 	{
 		$this->re_vals = $vals;
 	}
-	protected function render($template = null)
+	 */
+
+	protected function render($render_params = null)
 	{
+		$template = isset($render_params["template"]) ? $render_params["template"] : null;
+		$params = isset($render_params["params"]) ? $render_params["params"] : null;
+		if (!isset($this->currentActionName) || empty($this->currentActionName) ) {
+			$trace=debug_backtrace();
+			$caller=$trace[1];
+			$this->currentActionName = $caller['function'];
+		}
+
 		//TODO: improve this variables accessed automatically by a sign of specific symbol
 		$callerClass  = $this -> shortName . 'Views';
 		$callerMethod = $this -> currentActionName;
@@ -92,11 +112,8 @@ class BaseController{
 		}else{
 			$template = Environment::$conf['viewDir'] . $template;
 		}
-		ob_start();
-		$__ = $this -> __;
-		include($template);
-		$page = ob_get_clean();
-		echo $page;
+		$renderProcessor = new RenderProcessor();
+		$renderProcessor->render($template , $params);
 	}
 
 	protected function echo_JSON($arr)
@@ -105,7 +122,7 @@ class BaseController{
 		header('Content-type: application/json;charset=utf-8');
 		echo $json;
 	}
-	
+
 	protected function redirect($to)
 	{
 		if(is_array($to))
@@ -116,7 +133,7 @@ class BaseController{
 			}
 			if(isset($to['controller']))
 			{
-				$controller = Common::StrToTerm($to['controller'] , 'controller');
+				$controller = Common::StrToTerm($to['controller']);
 			}else{
 				$controller = Common::termToStr($this -> shortName);
 			}
@@ -130,39 +147,36 @@ class BaseController{
 		}else{
 			$url = $to;
 		}
-		Header('Location:' . $url);
-		exit;
+		header('Location:' . $url);
+		die;
 	}
-	
+
 	private function getShortName()
 	{
 		$pos = strpos($this->controllerName , 'Controller');
 		$this -> shortName = substr($this -> controllerName , 0 , $pos);
 	}
-	
+
 	protected function setFlash($flashMessage)
 	{
 		$this -> flash = array_merge($this -> flash , $flashMessage);
 		$_SESSION['flash'] = $this -> flash;
+    }
+
+    protected function set_flash($flash_message){
+		$this -> flash = array_merge($this -> flash , $flash_message);
+		$_SESSION['flash'] = $this -> flash;
 	}
-	
+
+	protected function get_flash($flash_key){
+		return isset($this->flash[$flash_key]) ? $this->flash[$flash_key] : null;
+	}
+
 	private function unsetFlash()
 	{
 		$_SESSION['flash'] = null;
 	}
-	
-	public function checkUserLogin()
-	{
-		$username = isset($_COOKIE['username'])?$_COOKIE['username']:"";
-		$res =array();
-		if(empty($username))
-		{
-			$res['ret'] = 0;
-			$res['err_msg'] ="please login in";
-		}
-		return $res;
-	}
-	
+
 	public function FormattedData($formatted_data)
 	{
 		foreach ($formatted_data as $key=>$value)
@@ -173,6 +187,45 @@ class BaseController{
 			}
 		}
 		return $formatted_data;
+    }
+
+	protected function before_filter() {
+		foreach ($this->before_filter as $filter) {
+			$filter_action = '';
+			if ( isset($filter['only']) && !empty($filter['only']) ) {
+				if ( in_array($this->currentActionName, $filter['only']) ) {
+					if ( isset($filter['action']) && !empty($filter['action']) ) {
+						$filter_action = $filter['action'];
+					}
+				}
+			} else {
+				$skip_actions = array();
+				if ( isset($filter['skip']) && !empty($filter['skip']) ) {
+					$skip_actions = $filter['skip'];
+				}
+				if ( in_array($this->currentActionName, $skip_actions) == false ) {
+					if ( isset($filter['action']) && !empty($filter['action']) ) {
+						$filter_action = $filter['action'];
+					}
+				}
+			}
+
+			if (!empty($filter_action) && $filter_action != $this->currentActionName) {
+				if ( method_exists(get_class($this) , $filter_action) ) {
+					$this->$filter_action();
+				} else {
+					throw new RouterException("Action ".$filter_action." not defined!!" , RouterException::ACTION_UNDEFINED);
+				}
+			}
+		}
+	}
+
+	protected function get_controller_name() {
+		return $this->controllerName;
+	}
+
+	protected function get_action_name() {
+		return $this->currentActionName;
 	}
 }
 ?>

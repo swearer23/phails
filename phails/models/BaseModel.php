@@ -3,10 +3,10 @@ require("Validation.php");
 require("Condition.php");
 class BaseModel
 {
-	protected static $adaptor = array();
-	protected static $columns = array();
-	protected static $model_name = array();
-	protected static $table_name = array();
+	protected static $adaptor_cache = array();
+	protected static $column_cache = array();
+	protected static $model_cache = array();
+	protected static $table_cache = array();
 	protected static $db_name;
 	protected static $db_config;
 	protected $validation = array();
@@ -16,7 +16,7 @@ class BaseModel
 
 	public static function init()
 	{
-		// reset model_name & table_name in one request 
+		// reset model_name & table_name in one request
 		$modelname = get_called_class();
 		self::set_model($modelname);
 		self::set_table($modelname);
@@ -24,65 +24,93 @@ class BaseModel
 		self::set_columns($modelname);
 	}
 
-
 	protected static function set_model($model_name)
 	{
-		if(!array_key_exists($model_name , self::$model_name))
+		if(!isset(self::$model_cache[$model_name]))
 		{
-			self::$model_name[$model_name] = $model_name;
+			self::$model_cache[$model_name] = $model_name;
 		}
 	}
 
-	public static function get_model()
+    final static public function update_records($object_array)
+    {
+        $adaptor = self::get_adaptor();
+        $result = $adaptor->update_records($object_array);
+        return $result;
+    }
+
+    final static public function drop_records($object_array)
+    {
+        $adaptor = self::get_adaptor();
+        $result = $adaptor->drop_records($object_array);
+        return $result;
+    }
+    /**
+     * 直接执行一条dql语句
+     */
+    final public static function query($sql, $array = null) {
+        $adaptor = self::get_adaptor ();
+        return $adaptor->query ( $sql, $array );
+    }
+    /**
+     * 直接执行一条dml语句
+     */
+    final public static function execute($sql, $array = null) {
+        $adaptor = self::get_adaptor ();
+        return $adaptor->execute ( $sql, $array );
+    }
+
+
+    public static function get_model()
 	{
-		$model_name = get_called_class();
-		return self::$model_name[$model_name];
+    	$class_name = get_called_class();
+		return self::$model_cache[$class_name];
 	}
 
 	protected static function set_table($model_name)
 	{
 		$pos = strpos($model_name , 'Model');
 		$table_name = Common::termToStr(substr($model_name , 0 , $pos));
-		if(!array_key_exists($table_name , self::$table_name))
+		if(!array_key_exists($table_name , self::$table_cache))
 		{
-			self::$table_name[$model_name] = $table_name;
+			self::$table_cache[$model_name] = $table_name;
 		}
 	}
 
 	protected static function get_table()
 	{
-		$model_name = get_called_class();
-		return self::$table_name[$model_name];
+		$class_name = get_called_class();
+		return self::$table_cache[$class_name];
 	}
 
 	protected static function set_adaptor($model_name)
 	{
-		if(!array_key_exists($model_name , self::$adaptor))
+		if(!array_key_exists($model_name , self::$adaptor_cache))
 		{
-			self::$adaptor[$model_name] = new Adaptor(self::get_model($model_name) , self::get_table($model_name) , static::$db_name , static::$db_config);
-		}
+			self::$adaptor_cache[$model_name] = new Adaptor(self::get_model($model_name) , self::get_table($model_name) , static::$db_name , static::$db_config);
+        }
 	}
 
 	protected static function get_adaptor()
 	{
-		$model_name = get_called_class();
-		return self::$adaptor[$model_name];
+		$class_name = get_called_class();
+		return self::$adaptor_cache[$class_name];
 	}
 
 	protected static function set_columns($model_name)
 	{
-		if(!array_key_exists($model_name , self::$columns))
+		if(!array_key_exists($model_name , self::$column_cache))
 		{
 			$adaptor = self::get_adaptor($model_name);
 			$table_name = self::get_table($model_name);
-			self::$columns[$model_name] = $adaptor->get_columns($table_name);
+			self::$column_cache[$model_name] = $adaptor->get_columns($table_name);
 		}
 	}
 
 	protected static function get_columns()
 	{
-		$model_name = get_called_class();
-		return self::$columns[$model_name];
+		$class_name = get_called_class();
+		return self::$column_cache[$class_name];
 	}
 
 	final public static function find($query_object=null)
@@ -138,7 +166,7 @@ class BaseModel
 	protected function after_create(){}
 	protected function after_save(){}
 	protected function after_update(){}
-	
+
 	final public function create($object_array = null)
 	{
 		$this->orm_mapping($object_array);
@@ -159,7 +187,7 @@ class BaseModel
 		}
 	}
 
-	final public function update($object_array = null)
+	final protected function update($object_array = null)
 	{
 		$this->orm_mapping($object_array);
 		$this->before_update();
@@ -178,7 +206,7 @@ class BaseModel
 		}
 	}
 
-	final public function count($condition)
+	final static public function count($condition)
 	{
 		$adaptor = self::get_adaptor();
 		return $adaptor->count($condition);
@@ -214,7 +242,7 @@ class BaseModel
 		$this->error_code = $error_code;
 	}
 
-	public function destroy()
+	public function destroy($object_array = null)
 	{
 		$this->orm_mapping($object_array);
 		$adaptor = self::get_adaptor();
@@ -267,6 +295,5 @@ class BaseModel
 		$this->orm_object = $object_array;
 		return $this->orm_object;
 	}
-
 }
 ?>

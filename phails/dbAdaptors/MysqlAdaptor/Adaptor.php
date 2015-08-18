@@ -8,16 +8,16 @@ require('ConnectionManager.php');
 
 class Adaptor{
 
-	private $use_db_config = null;
-	private $table_name;
-	private $conn;
-	private $affected_rows = 0;
-	private $model_name;
+	public $use_db_config = null;
+	public $table_name;
+	public $conn;
+	public $affected_rows = 0;
+	public $model_class;
 
 	public function __construct($model_name , $table_name , $db_name = null , $db_config = null)
 	{
 		$this->table_name = $table_name;
-		$this->model_name = $model_name;
+		$this->model_class = $model_name;
 		$this->conn = ConnectionManager::getInstance($db_name , $this->use_db_config);
 	}
 
@@ -28,22 +28,72 @@ class Adaptor{
 		$table_fields = $q->fetchAll(PDO::FETCH_COLUMN);
 		return $table_fields;
 	}
+    public function update_records($query_object)
+    {
+        $sql = "UPDATE `".$this->table_name."` SET ";
+        if(isset($query_object['update_records'])) {
+            $sql .= $query_object['update_records'];
+        }
 
+        if(isset($query_object['condition']->condition_statement)) {
+            $sql .= $query_object["condition"]->condition_statement;
+        }
+        $result = $this->exec($sql);
+        return $result['ret'];
+    }
+    public function drop_records($query_object)
+    {
+        $sql = "DELETE FROM `" . $this->table_name . "`";
+        if(isset($query_object["condition"]->condition_statement))
+        {
+            $sql .= $query_object["condition"]->condition_statement;
+        }
+        $result = $this->exec($sql);
+
+        return $result['ret'];
+    }
+/**
+* 直接执行一条dml语句
+*/
+    public function execute($sql, $array = null) {
+        try {
+            $this->conn->beginTransaction ();
+            $stmt = $this->conn->prepare ( $sql );
+            $stmt->execute ( $array );
+            $this->conn->commit ();
+            return true;
+        } catch ( PDOexecption $e ) {
+            $this->conn->rollBack ();
+            return false;
+        }
+    }
+    /**
+     * 直接执行一条dql语句
+     */
+    public function query($sql, $array = null) {
+        $stmt = $this->conn->prepare ( $sql );
+        $stmt->execute ( $array );
+        return $stmt->fetchAll ( PDO::FETCH_CLASS, $this->model_class );
+    }
 	public function create($orm_object)
 	{
 		foreach($orm_object as $k=>$v)
 		{
-			$orm_object[$k]=addslashes ($v);	
+			$orm_object[$k]=addslashes ($v);
 		}
 		$column_str = implode("`,`",array_keys($orm_object));
 		if(!empty($column_str)){
 			$column_str = "`".$column_str."`";
 		}
-		$values = implode("','",array_values($orm_object));
-		if(!empty($values)){
-			$values = "'".$values."'";
+		$values = array();
+		foreach(array_values($orm_object) as $value){
+			if(trim($value) == ""){
+				array_push($values ,  "NULL");
+			}else{
+				array_push($values , "'".$value."'");
+			}
 		}
-		$sql = "insert into `".$this->table_name."`(".$column_str.") values(".$values.")";
+		$sql = "insert into `".$this->table_name."`(".$column_str.") values(".implode("," , $values).")";
 		$result = $this->exec($sql);
 		return $this->conn->lastInsertId();
 	}
@@ -62,12 +112,14 @@ class Adaptor{
 		if(isset($query_object["limit"])){
 			$sql .= " LIMIT " . $query_object["limit"];
 		}
+
 		$result = $this->exec($sql);
 		if($cols == "*"){
-			return $result["statement"]->fetchAll(PDO::FETCH_CLASS , $this->model_name);
+			$res = $result["statement"]->fetchAll(PDO::FETCH_CLASS , $this->model_class);
 		}else{
-			return $result["statement"]->fetchAll(PDO::FETCH_COLUMN, $this->model_name);
+			$res = $result["statement"]->fetchAll(PDO::FETCH_COLUMN);
 		}
+        return $res;
 	}
 
 	public function findOne($query_object)
@@ -101,7 +153,11 @@ class Adaptor{
 		foreach($orm_object as $k => $v)
 		{
 			$orm_object[$k] = addslashes($v);
-			array_push($updates , $k . "='" . $v . "'");
+            if(trim($v) == ""){
+			    array_push($updates ,"`" . $k . "` = NULL");
+            }else{
+			    array_push($updates , "`" . $k . "` = '" . $orm_object[$k] . "'");
+            }
 		}
 		$updates = implode(" , " , $updates);
 		$sql = "UPDATE ".$this->table_name." SET ".$updates." WHERE id='".$orm_object["id"]."'";
@@ -143,7 +199,7 @@ class Adaptor{
 			"limit"		=> ""
 		);
 	}
-	
+
 	/*
 	public function getQueryStatement($columns="*",$table_name,$wheres,$order,$limit,$other){
 		if(empty($columns)||empty($table_name)||empty($wheres)){
@@ -221,7 +277,7 @@ class Adaptor{
 	public function fetchArray($rs){
 		return $rs->fetch(PDO::FETCH_ASSOC);
 	}
-	
+
 	public function getAffectedRows(){
 		return $this->affected_rows;
 	}

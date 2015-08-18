@@ -1,4 +1,9 @@
 <?php
+require_once 'ClassLoader.php';
+require_once 'ParameterWrapperInterface.php';
+require_once 'ParameterWrapper.php';
+require_once 'HttpRequest.php';
+
 class Common
 {
 	public static function getRequest()
@@ -20,9 +25,10 @@ class Common
 			$action = self::strToTerm('index' , 'action');
 		}
 		$request = array("controller" => $controller , "action" => $action);
+		$request = new HttpRequest($request);
 		return $request;
 	}
-	
+
 	public static function strToTerm($str , $suffix = '')
 	{
 		$str = str_replace("_" , " " , $str);
@@ -40,15 +46,20 @@ class Common
 				$firstChar = substr($str , 0 , 1);
 				$firstChar = strtolower($firstChar);
 				$str = $firstChar . substr($str , 1 , strlen($str));
-			};break;
+            };break;
+            case 'component':
+            {
+                $suffix = ucwords($suffix);
+                $str = $str.$suffix;
+            };break;
 			default:
 			{
 				$str =	$str;
 			};break;
 		}
 		return $str;
-	} 
-	
+	}
+
 	public static function termToStr($term)
 	{
 		$map = RouterMap::$map;
@@ -65,15 +76,26 @@ class Common
 			return $str;
 		}
 	}
-	
+
 	public static function requireClass($classname)
 	{
-		if(strpos($classname , 'Controller'))
+        /**
+         * 尝试运行ClassLoader来进行class的加载
+         */
+        $classLoader = ClassLoader::getDefaultLoader();
+        if ($classLoader->loadClass($classname)) {
+            return;
+        }
+
+        /**
+         * ClassLoader未能加载class后，使用旧方式来加载class
+         */
+		if(strpos($classname , 'Controller') && strrpos($classname , 'Controller') == strlen($classname) - strlen('Controller'))
 		{
 			require Environment::$conf['controllerDir'].$classname.'.php';
 			return;
 		}
-		if(strpos($classname , 'Model'))
+		if(strpos($classname , 'Model') && strrpos($classname , 'Model') == strlen($classname) - strlen('Model'))
 		{
 			require Environment::$conf['modelDir'].$classname.'.php';
 			$classname::init();
@@ -82,7 +104,7 @@ class Common
 		require Environment::$conf['utilsDir'].$classname.'.php';
 		return;
 	}
-	
+
 	public static function getCallerMethod()
 	{
 		$backtrace = debug_backtrace();
