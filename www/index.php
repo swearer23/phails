@@ -6,6 +6,6 @@ function __autoload($classname){
 $request = Common::getRequest();
 $controller = $request["controller"];
 $action = $request["action"];
-$class = new $controller;
+$class = new $controller($request);
 $class->$action();
 ?>
