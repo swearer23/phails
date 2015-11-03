@@ -160,6 +160,12 @@ class BaseModel
 		}
 	}
 
+	protected function beforeCreate();
+	protected function beforeUpdate();
+	protected function beforeSave();
+	protected function afterCreate();
+	protected function afterUpdate();
+	protected function afterSave();
 	protected function before_create(){}
 	protected function before_update(){}
 	protected function before_save(){}
@@ -170,6 +176,8 @@ class BaseModel
 	final public function create($object_array = null)
 	{
 		$this->orm_mapping($object_array);
+		$this->beforeCreate();
+		$this->beforeSave();
 		$this->before_create();
 		$this->before_save();
 		$this->orm_mapping();
@@ -179,6 +187,8 @@ class BaseModel
 			$adaptor = self::get_adaptor();
 			$id = $adaptor->create($this->orm_object);
 			$this->id = $id;
+			$this->afterCreate();
+			$this->afterSave();
 			$this->after_create();
 			$this->after_save();
 			return true;
@@ -190,6 +200,8 @@ class BaseModel
 	final protected function update($object_array = null)
 	{
 		$this->orm_mapping($object_array);
+		$this->beforeUpdate();
+		$this->beforeSave();
 		$this->before_update();
 		$this->before_save();
 		$this->orm_mapping();
@@ -198,6 +210,8 @@ class BaseModel
 		{
 			$adaptor = self::get_adaptor();
 			$result = $adaptor->update($this->orm_object);
+			$this->afterUpdate();
+			$this->afterSave();
 			$this->after_update();
 			$this->after_save();
 			return $result;
