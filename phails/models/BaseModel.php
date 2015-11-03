@@ -160,12 +160,12 @@ class BaseModel
 		}
 	}
 
-	protected function beforeCreate();
-	protected function beforeUpdate();
-	protected function beforeSave();
-	protected function afterCreate();
-	protected function afterUpdate();
-	protected function afterSave();
+	protected function beforeCreate(){};
+	protected function beforeUpdate(){};
+	protected function beforeSave(){};
+	protected function afterCreate(){};
+	protected function afterUpdate(){};
+	protected function afterSave(){};
 	protected function before_create(){}
 	protected function before_update(){}
 	protected function before_save(){}
