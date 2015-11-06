@@ -112,6 +112,9 @@ class Adaptor{
 		if(isset($query_object["limit"])){
 			$sql .= " LIMIT " . $query_object["limit"];
 		}
+		if (isset($query_object['offset'])) {
+			$sql .= " OFFSET " . $query_object["offset"];
+		}
 
 		$result = $this->exec($sql);
 		if($cols == "*"){
