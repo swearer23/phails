@@ -116,6 +116,12 @@ class BaseController{
 		$renderProcessor->render($template , $params);
 	}
 
+	protected function echoJSON($arr){
+		$json = json_encode($arr);
+		header('Content-type: application/json;charset=utf-8');
+		echo $json;
+	}
+
 	protected function echo_JSON($arr)
 	{
 		$json = json_encode($arr);
