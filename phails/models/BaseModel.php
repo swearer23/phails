@@ -119,6 +119,12 @@ class BaseModel
 		return $adaptor->find($query_object);
 	}
 
+	final public static function findOne($query_object=null)
+	{
+		$adaptor = self::get_adaptor();
+		return $adaptor->findOne($query_object);
+	}
+
 	final public static function find_one($query_object=null)
 	{
 		$adaptor = self::get_adaptor();
