@@ -236,6 +236,10 @@ class BaseModel
 		return $this->validation;
 	}
 
+	public function getInvalidMessage(){
+		return $this->invalid_message;
+	}
+
 	public function get_invalid_message()
 	{
 		return $this->invalid_message;
