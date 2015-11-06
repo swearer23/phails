@@ -226,6 +226,10 @@ class BaseModel
 		return $adaptor->count($condition);
 	}
 
+	public function toArray(){
+		return $this->mapping_out();
+	}
+
 	public function to_array()
 	{
 		return $this->mapping_out();
