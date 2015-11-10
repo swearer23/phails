@@ -143,6 +143,10 @@ class BaseModel
 		}
 	}
 
+	final public static function findById($id){
+		return self::find_by_id($id);
+	}
+
 	final public static function find_by_id($id)
 	{
 		$query_object = array(
