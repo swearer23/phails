@@ -135,13 +135,10 @@ class Adaptor{
 		}
 	}
 
-	public function count($query_object)
+	public function count($condition)
 	{
 		$sql = "SELECT COUNT(*) FROM ".$this->table_name;
-		if(isset($query_object["condition"]))
-		{
-			$sql .= $query_object["condition"]->condition_statement;
-		}
+		$sql .= $query_object["condition"]->condition_statement;
 		$result = $this->exec($sql);
 		return intval($result["statement"]->fetchColumn());
 	}
