@@ -66,9 +66,7 @@ class Validation{
 				when($column)->is($value)
 			);
 		}
-		$count = $this->model->count(array(
-			"condition" => $condition
-		));
+		$count = $this->model->count($condition);
 		if($count > 0){
 			return false;
 		}else{
