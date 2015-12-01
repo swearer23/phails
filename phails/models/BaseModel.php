@@ -230,7 +230,7 @@ class BaseModel
 		}
 	}
 
-	final static public function count($condition)
+	final static public function count($condition = null)
 	{
 		$adaptor = self::get_adaptor();
 		return $adaptor->count($condition);
@@ -264,9 +264,19 @@ class BaseModel
 		$this->invalid_message = $invalid_message;
 	}
 
+	public function getErrorCode()
+	{
+		return $this->errorCode;
+	}
+
 	public function get_error_code()
 	{
 		return $this->error_code;
+	}
+
+	public function setErrorCode($errorCode)
+	{
+		$this->errorCode = $errorCode;
 	}
 
 	public function set_error_code($error_code)

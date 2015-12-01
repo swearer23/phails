@@ -47,6 +47,9 @@ class Validation{
 				if(isset($v["error_code"])){
 					$this->model->set_error_code($v["error_code"]);
 				}
+				if(isset($v["errorCode"])){
+					$this->model->setErrorCode($v["errorCode"]);
+				}
 				break;
 			}
 		}
@@ -55,20 +58,23 @@ class Validation{
 
 	private function uniq_validation($column , $value)
 	{
-		if(self::$validation_type === self::UPDATE)
-		{
-			$condition = new Condition(
-				when($column)->is($value),
-				when("id")->is_not($this->model->id)
-			);
-		}else{
-			$condition = new Condition(
-				when($column)->is($value)
-			);
-		}
-		$count = $this->model->count($condition);
-		if($count > 0){
-			return false;
+		if ($value !== NULL) {
+			if(self::$validation_type === self::UPDATE){
+				$condition = new Condition(
+					when($column)->is($value),
+					when("id")->is_not($this->model->id)
+				);
+			}else{
+				$condition = new Condition(
+					when($column)->is($value)
+				);
+			}
+			$count = $this->model->count($condition);
+			if($count > 0){
+				return false;
+			}else{
+				return true;
+			}
 		}else{
 			return true;
 		}
