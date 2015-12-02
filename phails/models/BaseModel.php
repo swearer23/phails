@@ -113,6 +113,31 @@ class BaseModel
 		return self::$column_cache[$class_name];
 	}
 
+	final public static function pagination($query_object=null){
+		if (isset($query_object)) {
+			$page = isset($query_object['page']) ? $query_object['page'] - 1 : 0;
+			$perpage = isset($query_object['perpage']) ? $query_object['perpage'] : 25;
+			$order = isset($query_object['order']) ? $query_object['order'] : 'id DESC';
+			$condition = isset($query_object['condition']) ? $query_object['condition'] : null;
+		}else{
+			$page = 0;
+			$perpage = 25;
+			$order = 'id DESC';
+			$condition = null;
+		}
+		$list = self::find(array(
+			'limit'		=> $perpage,
+			'order'		=> $order,
+			'offset'	=> $perpage * $page,
+			'condition'	=> $condition
+		));
+		$totalPage = ceil(count($list) / $perpage);
+		return array(
+			'result'	=> $list,
+			'totalPage'	=> $totalPage
+		);
+	}
+
 	final public static function find($query_object=null)
 	{
 		$adaptor = self::get_adaptor();
