@@ -139,7 +139,7 @@ class BaseController{
 			}
 			if(isset($to['controller']))
 			{
-				$controller = Common::StrToTerm($to['controller']);
+				$controller = Common::termToStr($to['controller']);
 			}else{
 				$controller = Common::termToStr($this -> shortName);
 			}
@@ -149,7 +149,11 @@ class BaseController{
 			{
 				$params .= '&'.$k.'='.$v;
 			}
-			$url = '/index.php?controller=' . $controller . '&action=' . $action . $params;
+			$url = '/index.php?controller=' . $controller;
+			if (isset($action) && strlen(trim($action)) > 0) {
+				$url .= '&action='.$action;
+			}
+			$url .= $params;
 		}else{
 			$url = $to;
 		}
