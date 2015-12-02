@@ -1,6 +1,6 @@
 <?php
 	class IndexController extends BaseController{
-		function helloWorld(){
+		function index(){
 			echo "hello world";
 		}
 	}
