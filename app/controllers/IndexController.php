@@ -1,5 +1,5 @@
 <?php
-	class HelloWorldController extends BaseController{
+	class IndexController extends BaseController{
 		function helloWorld(){
 			echo "hello world";
 		}
